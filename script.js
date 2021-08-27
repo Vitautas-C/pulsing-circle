@@ -58,20 +58,20 @@ requestAnimationFrame(animate)
 
 
 class PulsingCircle {
-  constructor(x, y, color, minSize, maxSize, sizeChangeSpeed /* px/s */) {
+  constructor(x, y, hue, minSize, maxSize, changeSpeed /* px/s */) {
     this.x = x
     this.y = y
-    this.color = color
+    this.hue = hue
     this.minSize = minSize
     this.size = minSize
     this.maxSize = maxSize
-    this.sizeChangeSpeed = sizeChangeSpeed
+    this.changeSpeed = changeSpeed
   }
 
-  changeSize(time) {
+  change(time) {
     const fullChange = (this.maxSize - this.minSize) * 2
 
-    let sizeChange = (time * this.sizeChangeSpeed) / 1000
+    let sizeChange = (time * this.changeSpeed) / 1000
     sizeChange %= fullChange
     if (sizeChange === 0) return
     if (sizeChange > 0) {
@@ -79,7 +79,7 @@ class PulsingCircle {
         this.size += sizeChange
       } else {
         this.size = this.maxSize * 2 - this.size - sizeChange
-        this.sizeChangeSpeed = -this.sizeChangeSpeed
+        this.changeSpeed = -this.changeSpeed
       }
 
     } else { // sizeChange < 0
@@ -87,9 +87,10 @@ class PulsingCircle {
         this.size += sizeChange
       } else {
         this.size = this.minSize * 2 - this.size - sizeChange
-        this.sizeChangeSpeed = -this.sizeChangeSpeed
+        this.changeSpeed = -this.changeSpeed
       }
     }
+    this.hue += Math.abs(this.changeSpeed) / 1440
   }
 }
 
@@ -150,124 +151,25 @@ function addCircle(x, y, r, time) {
   const maxSize = r * 2
   const minSize = r / 2
 
-  const sizeChangeSpeed = (maxSize - minSize) / time * 1000 /* velocity=distance/time(time in sec) */ / 2
+  const changeSpeed = (maxSize - minSize) / time * 1000 /* velocity=distance/time(time in sec) */ / 2
 
-  circles.push(new PulsingCircle(x, y, `hsl(${lastTimestamp / 720}, 80%, 50%)`, minSize, maxSize, sizeChangeSpeed))
+  circles.push(new PulsingCircle(x, y, lastTimestamp / 720, minSize, maxSize, changeSpeed))
 }
 
 function animate(timestamp) {
   clear()
   const time = timestamp - lastTimestamp
   circles.forEach(circle => {
-    circle.changeSize(time)
-    drawCircle(circle.x, circle.y, circle.size / 2, circle.color)
+    circle.change(time)
+    const opacity = 1 - (circle.size - circle.minSize) / (circle.maxSize - circle.minSize) * 0.6
+    const color = `hsla(${circle.hue}, 80%, 50%, ${opacity})`
+    drawCircle(circle.x, circle.y, circle.size / 2, color)
   })
   lastTimestamp = timestamp
 
-  console.log(timestamp / 1000 | 0, time | 0)
+  // console.log(timestamp / 1000 | 0, time | 0)
   requestAnimationFrame(animate)
 }
-
-function changeColor() {
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -275,12 +177,12 @@ function changeColor() {
 // canvas.onmousedown = ({ offsetX, offsetY }) => [beginX, beginY] = [offsetX, offsetY]
 // canvas.onmouseup = ({ offsetX, offsetY }) => {
 //   [endX, endY] = [offsetX, offsetY]
-//   ctx.fillStyle = `hsl( ${Math.random() * 360},70%,20%)`
+//   ctx.fillStyle = `hsl(${ Math.random() * 360 }, 70 %, 20 %)`
 //   ctx.fillRect(beginX, beginY, endX - beginX, endY - beginY)
 //   ctx.fillRect(beginX, beginY, endX - beginX, endY - beginY)
 // }
 // canvas.onmousemove = ({ offsetX, offsetY }) => {
-//   ctx.fillStyle = `hsl( ${Math.random() * 360}, ${Math.random() * 100}%, ${Math.random() * 100}%)`;
+//   ctx.fillStyle = `hsl(${ Math.random() * 360 }, ${ Math.random() * 100 } %, ${ Math.random() * 100 } %)`;
 //   [beginX, beginY] = [offsetX, offsetY]
 //   ctx.fillRect(beginX, beginY, 10, 10)
 // }
@@ -292,9 +194,8 @@ function changeColor() {
 //   ctx.beginPath();
 //   ctx.moveTo(beginX, beginY);
 //   ctx.lineTo(endX, endY)
-//   ctx.fillStyle = `hsl( ${Math.random() * 360}, ${Math.random() * 100}%, ${Math.random() * 100}%)`;
+//   ctx.fillStyle = `hsl(${ Math.random() * 360 }, ${ Math.random() * 100 } %, ${ Math.random() * 100 } %)`;
 //   ctx.stroke();
 //   }
 
 // }
-// nameM()        // Отображает_путь
